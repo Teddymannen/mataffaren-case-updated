@@ -12,6 +12,7 @@
     "test": "newman run newman-tests/endpoint-test-collection.json"
   },
   "dependencies": {
+    "chai": "^4.3.10",
     "concurrently": "^8.0.1",
     "express": "^4.18.2",
     "react": "^18.2.0",

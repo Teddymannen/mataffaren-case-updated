@@ -1,0 +1,395 @@
+{
+	"info": {
+		"_postman_id": "343a04f6-68a5-46eb-828d-ac38b593680f",
+		"name": "Wille",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26841818",
+		"_collection_link": "https://lively-meadow-27836.postman.co/workspace/PVT22_Testautomatisering~1c22a03a-c5df-4c2b-ae63-d2ad536ab935/collection/26846662-343a04f6-68a5-46eb-828d-ac38b593680f?action=share&source=collection_link&creator=26841818"
+	},
+	"item": [
+		{
+			"name": "Get category tree",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseData = pm.response.json();\r",
+							"pm.variables.set('mainCategories', responseData.children);\r",
+							"// Filter out the parent category (alla-varor)\r",
+							"pm.variables.set('allCategories', getAllCategories(responseData).filter(c => c.id !== 'N00'));\r",
+							"\r",
+							"pm.variables.set('categoryCounter', 0);\r",
+							"pm.variables.set('sortCounter', 0);\r",
+							"\r",
+							"pm.test('Status code is 200', function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test('Response time is less than 1000ms', function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"pm.test('There are at least 15 main categories', () => {\r",
+							"    pm.expect(responseData.children.length).to.be.at.least(15);\r",
+							"});\r",
+							"\r",
+							"pm.test('All categories have the properties title and url', () => {\r",
+							"    for (let category of getAllCategories(responseData)) {\r",
+							"        // an empty string is falsy -> convert to false using !!\r",
+							"        // a string with content is truthy -> convert to true using !!\r",
+							"        pm.expect(!!category.title).to.be.true;\r",
+							"        pm.expect(!!category.url).to.be.true;\r",
+							"        // check that datatype is string for both title and url\r",
+							"        pm.expect(category.title).to.be.string;\r",
+							"        pm.expect(category.url).to.be.string;\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"/**\r",
+							" * Get category and all child categories in a single list, recursively\r",
+							" * @param category - A category that has a list of children\r",
+							" * @returns {Array} All categories in an array\r",
+							" */\r",
+							"function getAllCategories(category) {\r",
+							"    const categories = [category];\r",
+							"    for (const childCategory of category.children) {\r",
+							"        const childCategories = getAllCategories(childCategory);\r",
+							"        categories.push(...childCategories);\r",
+							"    }\r",
+							"    return categories;\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('baseUrl', 'http://localhost:4000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/leftMenu/categorytree",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"leftMenu",
+						"categorytree"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get products in category",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const categories = pm.variables.get('mainCategories');\r",
+							"\r",
+							"if (categories === undefined) {\r",
+							"    console.warn('No categories found. Make sure to run whole collection')\r",
+							"    pm.variables.set('urlCategoryPart', 'dryck');\r",
+							"    pm.variables.set('productSorting', 'compareprice-asc');\r",
+							"    return;\r",
+							"}\r",
+							"\r",
+							"// Get the category counter and convert to number (using +)\r",
+							"let categoryCounter = pm.variables.get('categoryCounter');\r",
+							"\r",
+							"// Get the category part of the url and set it as an environment variable\r",
+							"const sortingAlternatives = ['topRated', 'name-asc', 'name-desc', 'price-asc',\r",
+							"    'price-desc', 'compareprice-asc', 'compareprice-desc'];\r",
+							"\r",
+							"let productSorting = sortingAlternatives[categoryCounter % sortingAlternatives.length];\r",
+							"let urlCategoryPart = categories[categoryCounter].url;\r",
+							"pm.variables.set('urlCategoryPart', urlCategoryPart);\r",
+							"pm.variables.set('productSorting', productSorting);\r",
+							"\r",
+							"// Add 1 to the categoryCounter environment variable\r",
+							"categoryCounter++;\r",
+							"pm.variables.set('categoryCounter', categoryCounter);\r",
+							"\r",
+							"// Repeat/loop this request until we have requested all main categories\r",
+							"if (categories[categoryCounter]) {\r",
+							"    // Repeat this request (with new variable data for the url)\r",
+							"    postman.setNextRequest('Get products in category');\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseData = pm.response.json();\r",
+							"const productsToTest = pm.variables.get('productsToTest') || [];\r",
+							"productsToTest.push(responseData.results[0].code);\r",
+							"pm.variables.set('productsToTest', productsToTest);\r",
+							"\r",
+							"let productSorting = pm.variables.get('productSorting');\r",
+							"let a = {\r",
+							"    'topRated': { sortParameter: 'ranking', 'asc': false },\r",
+							"    'name-asc': { sortParameter: 'name', 'asc': true },\r",
+							"    'name-desc': { sortParameter: 'name', 'asc': false },\r",
+							"    'price-asc': { sortParameter: 'priceValue', 'asc': true },\r",
+							"    'price-desc': { sortParameter: 'priceValue', 'asc': false },\r",
+							"    'compareprice-asc': { sortParameter: 'comparePrice', 'asc': true },\r",
+							"    'compareprice-desc': { sortParameter: 'comparePrice', 'asc': false }\r",
+							"};\r",
+							"\r",
+							"pm.test('Status code is 200', function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test('Response time is less than 1000ms', function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"pm.test('There is at least 1 product in the category', () => {\r",
+							"    pm.expect(responseData.results.length).to.be.at.least(1);\r",
+							"});\r",
+							"\r",
+							"pm.test('Products in category have necessary properties', () => {\r",
+							"    for (const product of responseData.results) {\r",
+							"        pm.expect(product).to.have.property('name');\r",
+							"        pm.expect(product).to.have.property('image').with.property('url');\r",
+							"        pm.expect(product).to.have.property('price');\r",
+							"        pm.expect(product).to.have.property('priceUnit');\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"pm.test('Product list is sorted ' + productSorting, () => {\r",
+							"    let sortInfo = a[productSorting];\r",
+							"    let sortProperty = sortInfo.sortParameter;\r",
+							"    let isAscending = sortInfo.asc\r",
+							"\r",
+							"    for (let i = 0; i < responseData.results.length - 1; i++) {\r",
+							"        let productA = responseData.results[i];\r",
+							"        let productB = responseData.results[i + 1];\r",
+							"\r",
+							"        let propertyA = productA[sortProperty];\r",
+							"        let propertyB = productB[sortProperty];\r",
+							"\r",
+							"        if (sortProperty === 'priceValue') {\r",
+							"            propertyA = getLowestPrice(productA);\r",
+							"            propertyB = getLowestPrice(productB);\r",
+							"        } else if (sortProperty === 'comparePrice') {\r",
+							"            propertyA = getLowestComparePrice(productA);\r",
+							"            propertyB = getLowestComparePrice(productB);\r",
+							"        }\r",
+							"\r",
+							"        // console.log(productA, productB);\r",
+							"        pm.expect(compareValues(propertyA, propertyB, isAscending)).to.be.true;\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"function getLowestPrice(product) {\r",
+							"    // No promotion return original price\r",
+							"    if (product.potentialPromotions.length === 0) { return product.priceValue; }\r",
+							"\r",
+							"    // Promotion exist\r",
+							"    return product.potentialPromotions[0].price.value;\r",
+							"}\r",
+							"\r",
+							"function getLowestComparePrice(product) {\r",
+							"    if (product.potentialPromotions.length === 0) { return parseComparePrice(product.comparePrice); }\r",
+							"\r",
+							"    return parseComparePrice(product.potentialPromotions[0].comparePrice)\r",
+							"}\r",
+							"\r",
+							"function parseComparePrice(comparePrice) {\r",
+							"    if (!comparePrice) { return Number.NaN; }\r",
+							"    return Number.parseFloat(comparePrice.replace(' ', '').replace(',', '.').replace('kr', ''));\r",
+							"}\r",
+							"\r",
+							"/**\r",
+							" * Returns true if a comes before b\r",
+							" */\r",
+							"function compareValues(a, b, ascending) {\r",
+							"\r",
+							"    // console.log(a,b);\r",
+							"    // if a (compare)price doesn't exist it should always be at the bottom\r",
+							"    if (Number.isNaN(b)) {\r",
+							"        return true;\r",
+							"    } else if (Number.isNaN(a)) {\r",
+							"        // NaN should not exist before number (b is number and a is not)\r",
+							"        return false;\r",
+							"    }\r",
+							"\r",
+							"    if (typeof a === 'number' && typeof b === 'number') {\r",
+							"        return ascending ? a <= b : a >= b;\r",
+							"    } else if (typeof a === 'string' && typeof b === 'string') {\r",
+							"        let x = a.localeCompare(b, 'sv', { sensitivity: 'base' });\r",
+							"        return ascending ? x <= 0 : x >= 0;\r",
+							"    }\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/c/{{urlCategoryPart}}?size=100&page=0&sort={{productSorting}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"c",
+						"{{urlCategoryPart}}"
+					],
+					"query": [
+						{
+							"key": "size",
+							"value": "100"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "sort",
+							"value": "{{productSorting}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test('Status code is 200', function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test('Response time is less than 1000ms', function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"pm.test('Product has necessary properties', () => {\r",
+							"    pm.expect(responseData).to.have.property('name');\r",
+							"    pm.expect(responseData).to.have.property('description');\r",
+							"    pm.expect(responseData).to.have.property('image').with.property('url');\r",
+							"    pm.expect(responseData).to.have.property('price');\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const productCodes = pm.variables.get('productsToTest');\r",
+							"let productCounter = pm.variables.get('productCounter') || 0;\r",
+							"\r",
+							"pm.variables.set('productCode', productCodes[productCounter]);\r",
+							"productCounter++;\r",
+							"\r",
+							"pm.variables.set('productCounter', productCounter);\r",
+							"\r",
+							"if (productCodes[productCounter]) {\r",
+							"    // Repeat this request (with new variable data for the url)\r",
+							"    postman.setNextRequest('Get product');\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/axfood/rest/p/{{productCode}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"axfood",
+						"rest",
+						"p",
+						"{{productCode}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const invalidUrlEnds = [\r",
+							"    'ap',\r",
+							"    'api',\r",
+							"    'api/wqwqwq2',\r",
+							"    'api/😱😎',\r",
+							"    'api/c/nonExistantCategory3',\r",
+							"    'api/axfood/rest/p/notAProductCode123',\r",
+							"    'api/c/fardigmat?size=-1',\r",
+							"    'api/c/fardigmat?size=0.5',\r",
+							"    'api/c/fardigmat?sort=noSortType',\r",
+							"    'api/c/fardigmat?size=2&page=-1',\r",
+							"    'api/c/fardigmat?size=2&page=0.5'\r",
+							"];\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/{{invalidUrlEnd}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"{{invalidUrlEnd}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

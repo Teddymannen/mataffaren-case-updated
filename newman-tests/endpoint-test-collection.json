@@ -3,8 +3,8 @@
 		"_postman_id": "343a04f6-68a5-46eb-828d-ac38b593680f",
 		"name": "Wille",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26841818",
-		"_collection_link": "https://lively-meadow-27836.postman.co/workspace/PVT22_Testautomatisering~1c22a03a-c5df-4c2b-ae63-d2ad536ab935/collection/26846662-343a04f6-68a5-46eb-828d-ac38b593680f?action=share&source=collection_link&creator=26841818"
+		"_exporter_id": "26846662",
+		"_collection_link": "https://lively-meadow-27836.postman.co/workspace/PVT22_Testautomatisering~1c22a03a-c5df-4c2b-ae63-d2ad536ab935/collection/26846662-343a04f6-68a5-46eb-828d-ac38b593680f?action=share&source=collection_link&creator=26846662"
 	},
 	"item": [
 		{
@@ -100,7 +100,7 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"const categories = pm.variables.get('mainCategories');\r",
+							"const categories = pm.variables.get('allCategories');\r",
 							"\r",
 							"if (categories === undefined) {\r",
 							"    console.warn('No categories found. Make sure to run whole collection')\r",
@@ -139,9 +139,16 @@
 					"script": {
 						"exec": [
 							"const responseData = pm.response.json();\r",
+							"\r",
+							"// Add new product to productsToTest if possible\r",
+							"const maxProducts = 20;\r",
 							"const productsToTest = pm.variables.get('productsToTest') || [];\r",
-							"productsToTest.push(responseData.results[0].code);\r",
-							"pm.variables.set('productsToTest', productsToTest);\r",
+							"const firstProductCode = responseData.results[0].code;\r",
+							"\r",
+							"if (productsToTest.length < maxProducts && !productsToTest.includes(firstProductCode)) {\r",
+							"    productsToTest.push(firstProductCode);\r",
+							"    pm.variables.set('productsToTest', productsToTest);\r",
+							"}\r",
 							"\r",
 							"let productSorting = pm.variables.get('productSorting');\r",
 							"let a = {\r",

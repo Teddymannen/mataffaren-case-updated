@@ -1,16 +1,22 @@
 import { expect } from "chai";
 import { readdirSync } from 'fs';
 
+
+const env = {};
 let __exitCode = 0;
 let __testsCount = 0;
 let __testsPassed = 0;
 let __testsFailed = 0;
-const env = {};
+
+// Save tests
+let currentDescribe = null;
+let failedTests = {}; // {DescribeName: [tests]}
 
 
 function describe(title, callback) {
-  console.log(colors.bg.blue + 'Describe ' + title + colors.reset);
   try {
+    console.log(colors.bg.blue + '\nDescribe ' + title + colors.reset);
+    currentDescribe = title;
     callback();
   } catch (error) {
     console.log(colors.fg.red + 'Describe ' + title + ' failed', error + colors.reset);
@@ -22,10 +28,13 @@ function test(title, callback) {
   __testsCount++;
   try {
     callback();
-    console.log(colors.fg.green + 'Test ' + title + ' passed' + colors.reset);
+    console.log(colors.fg.green + title + ' passed' + colors.reset);
     __testsPassed++;
   } catch (error) {
-    console.log(colors.fg.red + 'Test ' + title + ' failed', error + colors.reset);
+    console.log(colors.fg.red + title + ' failed ' + error + colors.reset);
+    // Add to failed tests
+    failedTests[currentDescribe] = failedTests[currentDescribe] || [];
+    failedTests[currentDescribe].push({ title, error });
     __exitCode = 1;
     __testsFailed++;
     // process.exit(1);
@@ -41,14 +50,32 @@ async function start() {
     await import('../' + testFile);
   }
   const endTime = performance.now();
-  console.log('All tests finished in', endTime - startTime, 'ms');
-  console.log('Tests passed:', __testsPassed);
-  console.log('Tests failed:', __testsFailed);
+
+  printTestResults(endTime - startTime);
+
   process.exit(__exitCode);
 }
 
 
+function printTestResults(timeTakenMs) {
+  console.log('\n\nResults:\n');
+
+  for (let describeName in failedTests) {
+    console.log(colors.fg.gray + describeName + ' failed tests:' + colors.reset);
+    for (let failedTest of failedTests[describeName]) {
+      console.log(failedTest.title + ': ' + colors.fg.red + failedTest.error + colors.reset);
+    }
+  }
+
+  console.log('\n\nAll tests finished in', timeTakenMs, 'ms');
+  console.log('Tests passed:', __testsPassed);
+  console.log('Tests failed:', __testsFailed);
+}
+
+
 start();
+
+
 
 export { describe, test, expect, env };
 
@@ -71,7 +98,6 @@ const colors = {
     cyan: "\x1b[36m",
     white: "\x1b[37m",
     gray: "\x1b[90m",
-    crimson: "\x1b[38m" // Scarlet
   },
   bg: {
     black: "\x1b[40m",
@@ -83,6 +109,5 @@ const colors = {
     cyan: "\x1b[46m",
     white: "\x1b[47m",
     gray: "\x1b[100m",
-    crimson: "\x1b[48m"
   }
 };

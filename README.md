@@ -97,3 +97,41 @@ The reason we test for invalid requests is because we want to make sure that the
 * `api/c/fardigmat?sort=noSortType`
 * `api/c/fardigmat?size=2&page=-1`
 * `api/c/fardigmat?size=2&page=0.5`
+
+## Other testing frameworks
+
+We made our own test-runner on the branch `api-testing`. 
+
+We used Jest to get similar results on the branch `api-testing-jest`. 
+
+Our goal was to be able to use normal for-loops to test multiple endpoints for categories and products instead of using `nextRequest`. We achieved this goal. 
+
+We didn't transfer all tests from postman to the test-runners. 
+
+## Test results
+
+### Sorting
+
+We found that sorting by name does not work as expected. 
+What happens is that when two products start with the same word or words and one have extra words after that, the product with the extra words will be sorted first. 
+
+Example: 
+
+* `Ölkorv`
+* `Ölkorv 3-pack`
+
+When sorting by name A-Ö, `Ölkorv 3-pack` will be sorted before `Ölkorv` instead of the expected result `Ölkorv` before `Ölkorv 3-pack`. 
+
+Another problem with sorting by name is that it doesn't work with the Swedish characters `åäö`.
+
+Example:
+
+* `Åre Bcaa Wild Berries Energidryck Burk`
+* `Äpplejuice med Fruktkött`
+
+When sorting by name A-Ö, `Äpplejuice med Fruktkött` will be sorted before `Åre Bcaa Wild Berries Energidryck Burk` instead of the expected result `Åre Bcaa Wild Berries Energidryck Burk` before `Äpplejuice med Fruktkött`.
+
+### Invalid request
+
+We found that the server could crash when sending invalid requests. We fixed this by adding a try-catch in the backend. 
+

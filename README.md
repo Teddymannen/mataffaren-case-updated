@@ -49,7 +49,7 @@ One type of sorting is used on each endpoint. The sorting type is rotating after
 
 To test that there is at least 1 product in the category we check the length of `responseData.results`.
 
-To test that products in category have necessary properties we loop through all products in `responseData.results` and check that they have the properties `name`, `image.url`, `price` and `priceUnit`. We deem these neccessary because they are used in the frontend.
+To test that products in category have necessary properties we loop through all products in `responseData.results` and check that they have the properties `name`, `image.url`, `price`, `priceUnit` and `code`. We deem these neccessary because they are used in the frontend.
 
 To test that the product list is sorted correctly we loop through all products and compare the current product with the next one. We made a function `compareValues` which returns `true` if the current product should be before the next one in the list and `false` otherwise. We then check that `compareValues` returns `true` for all products in the list.
 
@@ -86,14 +86,14 @@ We want to test multiple invalid endpoints and must therefore create a loop. Fir
 The reason we test for invalid requests is because we want to make sure that the server doesn't crash. We test that the response time is less than 1000ms because we don't want the server to spend too much time on invalid requests. If the server crashes and doesn't respond, postman will throw an error and the test will fail. 
 
 ### List of endpoints: 
-* `ap`,
-* `api`,
-* `api/😱😎`,
-* `api/wqwqwq2`,
-* `api/c/nonExistantCategory3`,
-* `api/axfood/rest/p/notAProductCode123`,
-* `api/c/fardigmat?size=-1`,
-* `api/c/fardigmat?size=0.5`,
-* `api/c/fardigmat?sort=noSortType`,
-* `api/c/fardigmat?size=2&page=-1`,
+* `ap`
+* `api`
+* `api/😱😎`
+* `api/wqwqwq2`
+* `api/c/nonExistantCategory3`
+* `api/axfood/rest/p/notAProductCode123`
+* `api/c/fardigmat?size=-1`
+* `api/c/fardigmat?size=0.5`
+* `api/c/fardigmat?sort=noSortType`
+* `api/c/fardigmat?size=2&page=-1`
 * `api/c/fardigmat?size=2&page=0.5`

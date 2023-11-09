@@ -6,7 +6,8 @@ const sortingAlternatives = Object.keys(sortingInfo);
 
 const categoryTreeUrl = `${baseUrl}/api/leftMenu/categorytree`;
 const { data } = await Fetcher.getCached(categoryTreeUrl);
-const categories = getAllCategories(data).filter(c => c.id !== 'N00');
+// const categories = getAllCategories(data).filter(c => c.id !== 'N00');
+const categories = data.children;
 
 const maxProducts = 20;
 env.productCodes = new Set();
@@ -25,27 +26,31 @@ for (let i = 0; i < categories.length; i++) {
   });
 }
 
+// --------------------------------------------------------------
+// -------------------- TEST FUNCTIONS BELOW --------------------
+// --------------------------------------------------------------
+
 function testEndpointData({ response, data, responseTime }, variables) {
 
   // const { response, data, responseTime } = Fetcher.getCached(url);
   test('Status code is 200', () => {
-    expect(response.status).to.equal(200);
+    expect(response.status).toBe(200);
   });
 
   test('Response time is less than 1000ms', () => {
-    expect(responseTime).to.be.lessThan(1000);
+    expect(responseTime).toBeLessThan(1000);
   });
 
   test('There is at least 1 product in the category', () => {
-    expect(data.results.length).to.be.at.least(1);
+    expect(data.results.length).toBeGreaterThanOrEqual(1);
   });
 
   test('Products in category have necessary properties', () => {
     for (const product of data.results) {
-      expect(product).to.have.property('name');
-      expect(product).to.have.property('image').with.property('url');
-      expect(product).to.have.property('price');
-      expect(product).to.have.property('priceUnit');
+      expect(product).toHaveProperty('name');
+      expect(product).toHaveProperty('image.url');
+      expect(product).toHaveProperty('price');
+      expect(product).toHaveProperty('priceUnit');
     }
   });
 
@@ -70,7 +75,7 @@ function testEndpointData({ response, data, responseTime }, variables) {
       }
 
       // console.log(productA, productB);
-      expect(compareValues(propertyA, propertyB, isAscending)).to.be.true;
+      expect(compareValues(propertyA, propertyB, isAscending)).toBeTruthy();
     }
   });
 }

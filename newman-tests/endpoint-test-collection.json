@@ -15,6 +15,7 @@
 					"script": {
 						"exec": [
 							"const responseData = pm.response.json();\r",
+							"pm.globals.set(\"variable_key\", \"variable_value\");\r",
 							"pm.variables.set('mainCategories', responseData.children);\r",
 							"// Filter out the parent category (alla-varor)\r",
 							"pm.variables.set('allCategories', getAllCategories(responseData).filter(c => c.id !== 'N00'));\r",
@@ -27,6 +28,7 @@
 							"});\r",
 							"\r",
 							"pm.test('Response time is less than 1000ms', function () {\r",
+							"pm.collectionVariables.set(\"variable_key\", \"variable_value\");\r",
 							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
 							"});\r",
 							"\r",
@@ -102,8 +104,8 @@
 							"\r",
 							"if (categories === undefined) {\r",
 							"    console.warn('No categories found. Make sure to run whole collection')\r",
-							"    pm.variables.set('urlCategoryPart', 'dryck');\r",
-							"    pm.variables.set('productSorting', 'compareprice-asc');\r",
+							"    pm.variables.set('urlCategoryPart', 'mejeri-ost-och-agg/mjolk');\r",
+							"    pm.variables.set('productSorting', 'price-asc');\r",
 							"    return;\r",
 							"}\r",
 							"\r",
@@ -359,8 +361,8 @@
 							"const invalidUrlEnds = [\r",
 							"    'ap',\r",
 							"    'api',\r",
-							"    'api/wqwqwq2',\r",
 							"    'api/😱😎',\r",
+							"    'api/wqwqwq2',\r",
 							"    'api/c/nonExistantCategory3',\r",
 							"    'api/axfood/rest/p/notAProductCode123',\r",
 							"    'api/c/fardigmat?size=-1',\r",
@@ -369,6 +371,31 @@
 							"    'api/c/fardigmat?size=2&page=-1',\r",
 							"    'api/c/fardigmat?size=2&page=0.5'\r",
 							"];\r",
+							"\r",
+							"let invalidUrlCounter = pm.variables.get('invalidUrlCounter') || 0;\r",
+							"\r",
+							"pm.variables.set('invalidUrlEnd', invalidUrlEnds[invalidUrlCounter]);\r",
+							"invalidUrlCounter++;\r",
+							"\r",
+							"pm.variables.set('invalidUrlCounter', invalidUrlCounter);\r",
+							"\r",
+							"if (invalidUrlEnds[invalidUrlCounter]) {\r",
+							"    // Repeat this request (with new variable data for the url)\r",
+							"    postman.setNextRequest('Invalid request');\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response time is less than 200ms\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
 							"\r",
 							""
 						],
@@ -390,6 +417,12 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "variable_key",
+			"value": ""
 		}
 	]
 }

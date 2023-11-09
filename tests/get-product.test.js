@@ -33,8 +33,7 @@ function testEndpointData({ response, data, responseTime }) {
 
   test('Product has necessary properties', () => {
     expect(data).toHaveProperty('name');
-    expect(data).toHaveProperty('image');
-    expect(data.image).toHaveProperty('url');
+    expect(data).toHaveProperty('image.url');
     expect(data).toHaveProperty('price');
     expect(data).toHaveProperty('priceUnit');
     expect(data).toHaveProperty('description');

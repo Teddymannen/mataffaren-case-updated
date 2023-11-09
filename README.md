@@ -114,7 +114,7 @@ Our goal was to be able to use normal for-loops to test multiple endpoints for c
 
 We didn't transfer all tests from postman to the test-runners.
 
-We think that it was easier to write the tests using our own test runner and Visual Studio Code compared to Postman. We might have some bias as the logic was already written in Postman and we just had to rewrite it in our test-runners.
+We believe that it was easier to write the tests using our own test runner and Visual Studio Code compared to Postman. We might have some bias as the logic was already written in Postman and we just had to rewrite it in our test-runners.
 
 ## Test results
 

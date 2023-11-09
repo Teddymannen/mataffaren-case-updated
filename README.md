@@ -59,4 +59,41 @@ When sorting by `priceValue` or `comparePrice` it should use the lowest availabl
 
 ## Get product
 
+`/api/axfood/rest/p/{{productCode}}`
+
+### Pre-request
+
+We want to test multiple product codes and must therefore create a loop. In the the previous test the variable `productsToTest` is created. We use this variable together with a variable `productCounter` to choose a product. The variable `productCounter` is incremented by 1 after getting the product and if there are more products `postman.setNextRequest` is used. 
+
+### Tests
+
+* Product has necessary properties
+
+To test that the product has necessary properties we check that it has the properties `name`, `description`, `image.url`, `price` and `priceUnit`. We deem these neccessary because they are used in the frontend. 
+
 ## Invalid request
+
+`/{{invalidUrlEnd}}`
+
+### Pre-request
+
+We want to test multiple invalid endpoints and must therefore create a loop. First we create an array with a set of manually chosen invalid endpoints. We use this array together with a variable `invalidUrlCounter` to choose an invalid endpoint. The variable `invalidUrlCounter` is incremented by 1 after getting the invalid endpoint and if there are more invalid endpoints `postman.setNextRequest` is used.
+
+### Tests
+
+* Response time is less than 1000ms
+
+The reason we test for invalid requests is because we want to make sure that the server doesn't crash. We test that the response time is less than 1000ms because we don't want the server to spend too much time on invalid requests. If the server crashes and doesn't respond, postman will throw an error and the test will fail. 
+
+### List of endpoints: 
+* `ap`,
+* `api`,
+* `api/😱😎`,
+* `api/wqwqwq2`,
+* `api/c/nonExistantCategory3`,
+* `api/axfood/rest/p/notAProductCode123`,
+* `api/c/fardigmat?size=-1`,
+* `api/c/fardigmat?size=0.5`,
+* `api/c/fardigmat?sort=noSortType`,
+* `api/c/fardigmat?size=2&page=-1`,
+* `api/c/fardigmat?size=2&page=0.5`

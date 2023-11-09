@@ -1,5 +1,7 @@
 const baseUrl = 'http://localhost:4000';
 
+let env = {};
+
 const sortingInfo = {
   'topRated': { sortParameter: 'ranking', 'asc': false },
   'name-asc': { sortParameter: 'name', 'asc': true },
@@ -27,4 +29,4 @@ function getAllCategories(category) {
 }
 
 
-export { baseUrl, getAllCategories, sortingInfo };
+export { baseUrl, getAllCategories, sortingInfo, env };

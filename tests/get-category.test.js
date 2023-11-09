@@ -6,8 +6,8 @@ const sortingAlternatives = Object.keys(sortingInfo);
 
 const categoryTreeUrl = `${baseUrl}/api/leftMenu/categorytree`;
 const { data } = await Fetcher.getCached(categoryTreeUrl);
-// const categories = getAllCategories(data).filter(c => c.id !== 'N00');
-const categories = data.children;
+const categories = getAllCategories(data).filter(c => c.id !== 'N00');
+// const categories = data.children;
 
 const maxProducts = 20;
 env.productCodes = new Set();

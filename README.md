@@ -40,7 +40,9 @@ To test that all categories have the properties `title` and `url` we first gener
 
 We want to test multiple category endpoints and must therefore create a loop. In the the previous test the variables `mainCategories` and `allCategories` are created. We use one of those together with a variable `categoryCounter` to choose a category and sorting. The variable `categoryCounter` is incremented by 1 after getting the category and if there are more categories `postman.setNextRequest` is used.
 
-One type of sorting is used on each endpoint. The sorting type is rotating after each request using modulo (`%`) on `categoryCounter`.
+Every type of sorting is used on each endpoint `mainCategory` when using newman. 
+
+You can also make it so that the sorting type is rotating after each request using modulo (`%`) on `categoryCounter`, which we do in our own test-runners.
 
 ### Tests
 * There is at least 1 product in the category
@@ -134,4 +136,13 @@ When sorting by name A-Ö, `Äpplejuice med Fruktkött` will be sorted before `�
 ### Invalid request
 
 We found that the server could crash when sending invalid requests. We fixed this by adding a try-catch in the backend. 
+
+### Test coverage
+
+There are no tests for pagination.
+
+We do not test every product. 
+
+We also don't test every category. We do test every category on the test frameworks we made ourselves (1 sort per category). In the newman test we test all sorts on all the main categories. The reason we don't test all categories when using GitHub Actions is because after a lot of requests they get blocked.
+
 

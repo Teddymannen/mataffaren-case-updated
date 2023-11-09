@@ -108,7 +108,9 @@ We used Jest to get similar results on the branch `api-testing-jest`.
 
 Our goal was to be able to use normal for-loops to test multiple endpoints for categories and products instead of using `nextRequest`. We achieved this goal. 
 
-We didn't transfer all tests from postman to the test-runners. 
+We didn't transfer all tests from postman to the test-runners.
+
+We think that it was easier to write the tests using our own test runner and Visual Studio Code compared to Postman. We might have some bias as the logic was already written in Postman and we just had to rewrite it in our test-runners.
 
 ## Test results
 
@@ -136,6 +138,10 @@ When sorting by name A-Ö, `Äpplejuice med Fruktkött` will be sorted before `�
 ### Invalid request
 
 We found that the server could crash when sending invalid requests. We fixed this by adding a try-catch in the backend. 
+
+### Response time
+
+The response time test sometimes fail when running using GitHub Actions.
 
 ### Test coverage
 

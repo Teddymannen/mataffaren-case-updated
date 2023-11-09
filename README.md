@@ -1,5 +1,9 @@
 # Endpoint testing
 
+To run the tests:
+1. `npm run backend` or `npm start`
+2. `npm test`
+
 | Endpoint | What it is | Information |
 | -------- | ---------- | ----------- |
 | /api/leftMenu/categorytree | All categories | All categories in a tree structure |
@@ -102,9 +106,9 @@ The reason we test for invalid requests is because we want to make sure that the
 
 ## Other testing frameworks
 
-We made our own test-runner on the branch `api-testing`. 
+We made our own test-runner on the branch `api-testing`. Use `npm run test-custom` to run it.
 
-We used Jest to get similar results on the branch `api-testing-jest`. 
+We used Jest to get similar results on the branch `api-testing-jest`. Use `npm run test-jest` to run it.
 
 Our goal was to be able to use normal for-loops to test multiple endpoints for categories and products instead of using `nextRequest`. We achieved this goal. 
 

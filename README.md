@@ -42,11 +42,11 @@ To test that all categories have the properties `title` and `url` we first gener
 
 ### Pre-request
 
-We want to test multiple category endpoints and must therefore create a loop. In the the previous test the variables `mainCategories` and `allCategories` are created. We use one of those together with a variable `categoryCounter` to choose a category and sorting. The variable `categoryCounter` is incremented by 1 after getting the category and if there are more categories `postman.setNextRequest` is used.
+We want to test multiple category endpoints and must therefore create a loop. In the the previous test the variables `mainCategories` and `allCategories` are created. We use one of those together with a variable `categoryCounter` to choose a category and `sortCounter` to choose sorting. The variable `categoryCounter` is incremented by 1 after all all sorts have tested on that category and if there are more categories `postman.setNextRequest` is used.
 
 Every type of sorting is used on each endpoint `mainCategory` when using newman. 
 
-You can also make it so that the sorting type is rotating after each request using modulo (`%`) on `categoryCounter`, which we do in our own test-runners.
+You can also make it so that the sorting type is rotating after each request using modulo (`%`) on `categoryCounter`, which we do in our own test-runners. This means that only one sorting option is tested per category
 
 ### Tests
 * There is at least 1 product in the category

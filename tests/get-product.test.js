@@ -1,15 +1,11 @@
 import Fetcher from './helpers/Fetcher.js';
 import { baseUrl, env } from './helpers/index.js';
 
-let productCodes = env.productCodes;
-
 // What to do if there are no product codes in env
-if (!productCodes) {
-  const categoryTreeUrl = `${baseUrl}/api/leftMenu/categorytree`;
-  const { data } = await Fetcher.getCached(categoryTreeUrl);
-  const categories = data.children;
-  productCodes = await getProductCodes(categories);
-}
+const categoryTreeUrl = `${baseUrl}/api/leftMenu/categorytree`;
+const { data } = await Fetcher.getCached(categoryTreeUrl);
+const categories = data.children;
+let productCodes = await getProductCodes(categories);
 
 // Test all products
 for (const productCode of productCodes) {

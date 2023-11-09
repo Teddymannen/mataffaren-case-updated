@@ -1,7 +1,6 @@
 import Fetcher from './helpers/Fetcher.js';
 import { baseUrl, sortingInfo, getAllCategories, env } from './helpers/index.js';
 
-// USING CHAI EXPECT
 const sortingAlternatives = Object.keys(sortingInfo);
 
 const categoryTreeUrl = `${baseUrl}/api/leftMenu/categorytree`;
@@ -9,17 +8,10 @@ const { data } = await Fetcher.getCached(categoryTreeUrl);
 const categories = getAllCategories(data).filter(c => c.id !== 'N00');
 // const categories = data.children;
 
-const maxProducts = 20;
-env.productCodes = new Set();
-
 for (let i = 0; i < categories.length; i++) {
   const category = categories[i];
   const sorting = sortingAlternatives[i % sortingAlternatives.length];
   const responseInfo = await Fetcher.getCached(`${baseUrl}/api/c/${category.url}?size=100&page=0&sort=${sorting}`);
-
-  if (env.productCodes.size < maxProducts) {
-    env.productCodes.add(responseInfo.data.results[0].code);
-  }
 
   describe('category ' + category.url, () => {
     testEndpointData(responseInfo, { sorting });

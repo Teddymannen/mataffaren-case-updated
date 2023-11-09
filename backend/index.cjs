@@ -5,7 +5,12 @@ const port = 4000;
 
 // proxy willys
 app.get('/api/*', async (req, res) => {
-  res.json(await (await fetch(`https://www.willys.se${req.url.slice(4)}`)).json())
+  try {
+    res.json(await (await fetch(`https://www.willys.se${req.url.slice(4)}`)).json())
+  }
+  catch (err) {
+    res.status(500).json({ message: err.message })
+  }
 });
 
 // Category tree: /api/leftMenu/categorytree 

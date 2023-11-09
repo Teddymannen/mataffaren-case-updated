@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "newman run newman-tests/endpoint-test-collection.json"
+    "test": "newman run newman-tests/endpoint-test-collection.json",
+    "test-custom": "node ./tests/testEngine/index.js"
   },
   "dependencies": {
     "chai": "^4.3.10",

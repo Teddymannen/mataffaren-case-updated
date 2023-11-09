@@ -3,8 +3,8 @@
 		"_postman_id": "343a04f6-68a5-46eb-828d-ac38b593680f",
 		"name": "Wille",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "26841818",
-		"_collection_link": "https://lively-meadow-27836.postman.co/workspace/PVT22_Testautomatisering~1c22a03a-c5df-4c2b-ae63-d2ad536ab935/collection/26846662-343a04f6-68a5-46eb-828d-ac38b593680f?action=share&source=collection_link&creator=26841818"
+		"_exporter_id": "26846662",
+		"_collection_link": "https://lively-meadow-27836.postman.co/workspace/PVT22_Testautomatisering~1c22a03a-c5df-4c2b-ae63-d2ad536ab935/collection/26846662-343a04f6-68a5-46eb-828d-ac38b593680f?action=share&source=collection_link&creator=26846662"
 	},
 	"item": [
 		{
@@ -15,6 +15,7 @@
 					"script": {
 						"exec": [
 							"const responseData = pm.response.json();\r",
+							"pm.globals.set(\"variable_key\", \"variable_value\");\r",
 							"pm.variables.set('mainCategories', responseData.children);\r",
 							"// Filter out the parent category (alla-varor)\r",
 							"pm.variables.set('allCategories', getAllCategories(responseData).filter(c => c.id !== 'N00'));\r",
@@ -27,6 +28,7 @@
 							"});\r",
 							"\r",
 							"pm.test('Response time is less than 1000ms', function () {\r",
+							"pm.collectionVariables.set(\"variable_key\", \"variable_value\");\r",
 							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
 							"});\r",
 							"\r",
@@ -100,33 +102,39 @@
 						"exec": [
 							"const categories = pm.variables.get('mainCategories');\r",
 							"\r",
-							"if (categories === undefined) {\r",
+							"if (categories === undefined){\r",
 							"    console.warn('No categories found. Make sure to run whole collection')\r",
-							"    pm.variables.set('urlCategoryPart', 'dryck');\r",
-							"    pm.variables.set('productSorting', 'compareprice-asc');\r",
+							"    pm.variables.set('urlCategoryPart', 'fryst');\r",
+							"    pm.variables.set('productSorting', 'name-desc');\r",
 							"    return;\r",
 							"}\r",
 							"\r",
-							"// Get the category counter and convert to number (using +)\r",
+							"let sortCounter = pm.variables.get('sortCounter');\r",
 							"let categoryCounter = pm.variables.get('categoryCounter');\r",
 							"\r",
-							"// Get the category part of the url and set it as an environment variable\r",
-							"const sortingAlternatives = ['topRated', 'name-asc', 'name-desc', 'price-asc',\r",
-							"    'price-desc', 'compareprice-asc', 'compareprice-desc'];\r",
+							"const sortingAlternatives = ['topRated','name-asc', 'name-desc', 'price-asc',\r",
+							"                             'price-desc', 'compareprice-asc', 'compareprice-desc'];\r",
 							"\r",
-							"let productSorting = sortingAlternatives[categoryCounter % sortingAlternatives.length];\r",
+							"let productSorting = sortingAlternatives[sortCounter];\r",
 							"let urlCategoryPart = categories[categoryCounter].url;\r",
 							"pm.variables.set('urlCategoryPart', urlCategoryPart);\r",
 							"pm.variables.set('productSorting', productSorting);\r",
 							"\r",
-							"// Add 1 to the categoryCounter environment variable\r",
-							"categoryCounter++;\r",
+							"// Add 1 to the sortCounter environment variable \r",
+							"sortCounter++;\r",
+							"if (sortCounter >= sortingAlternatives.length){\r",
+							"    // Reset sortCounter and increase category (all sortings tested)\r",
+							"    sortCounter = 0;\r",
+							"    categoryCounter++;\r",
+							"}\r",
+							"\r",
+							"pm.variables.set('sortCounter', sortCounter);\r",
 							"pm.variables.set('categoryCounter', categoryCounter);\r",
 							"\r",
 							"// Repeat/loop this request until we have requested all main categories\r",
-							"if (categories[categoryCounter]) {\r",
-							"    // Repeat this request (with new variable data for the url)\r",
-							"    postman.setNextRequest('Get products in category');\r",
+							"if(categories[categoryCounter]) {\r",
+							"  // Repeat this request (with new variable data for the url)\r",
+							"  postman.setNextRequest('Get products in category');\r",
 							"}"
 						],
 						"type": "text/javascript"
@@ -137,9 +145,16 @@
 					"script": {
 						"exec": [
 							"const responseData = pm.response.json();\r",
+							"\r",
+							"// Add new product to productsToTest if possible\r",
+							"const maxProducts = 20;\r",
 							"const productsToTest = pm.variables.get('productsToTest') || [];\r",
-							"productsToTest.push(responseData.results[0].code);\r",
-							"pm.variables.set('productsToTest', productsToTest);\r",
+							"const firstProductCode = responseData.results[0].code;\r",
+							"\r",
+							"if (productsToTest.length < maxProducts && !productsToTest.includes(firstProductCode)) {\r",
+							"    productsToTest.push(firstProductCode);\r",
+							"    pm.variables.set('productsToTest', productsToTest);\r",
+							"}\r",
 							"\r",
 							"let productSorting = pm.variables.get('productSorting');\r",
 							"let a = {\r",
@@ -170,6 +185,7 @@
 							"        pm.expect(product).to.have.property('image').with.property('url');\r",
 							"        pm.expect(product).to.have.property('price');\r",
 							"        pm.expect(product).to.have.property('priceUnit');\r",
+							"        pm.expect(product).to.have.property('code');\r",
 							"    }\r",
 							"});\r",
 							"\r",
@@ -299,6 +315,7 @@
 							"    pm.expect(responseData).to.have.property('description');\r",
 							"    pm.expect(responseData).to.have.property('image').with.property('url');\r",
 							"    pm.expect(responseData).to.have.property('price');\r",
+							"    pm.expect(responseData).to.have.property('priceUnit');\r",
 							"});\r",
 							"\r",
 							"\r",
@@ -359,8 +376,8 @@
 							"const invalidUrlEnds = [\r",
 							"    'ap',\r",
 							"    'api',\r",
-							"    'api/wqwqwq2',\r",
 							"    'api/😱😎',\r",
+							"    'api/wqwqwq2',\r",
 							"    'api/c/nonExistantCategory3',\r",
 							"    'api/axfood/rest/p/notAProductCode123',\r",
 							"    'api/c/fardigmat?size=-1',\r",
@@ -369,6 +386,31 @@
 							"    'api/c/fardigmat?size=2&page=-1',\r",
 							"    'api/c/fardigmat?size=2&page=0.5'\r",
 							"];\r",
+							"\r",
+							"let invalidUrlCounter = pm.variables.get('invalidUrlCounter') || 0;\r",
+							"\r",
+							"pm.variables.set('invalidUrlEnd', invalidUrlEnds[invalidUrlCounter]);\r",
+							"invalidUrlCounter++;\r",
+							"\r",
+							"pm.variables.set('invalidUrlCounter', invalidUrlCounter);\r",
+							"\r",
+							"if (invalidUrlEnds[invalidUrlCounter]) {\r",
+							"    // Repeat this request (with new variable data for the url)\r",
+							"    postman.setNextRequest('Invalid request');\r",
+							"}\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response time is less than 1000ms\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
 							"\r",
 							""
 						],
@@ -390,6 +432,12 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "variable_key",
+			"value": ""
 		}
 	]
 }

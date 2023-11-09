@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import exp from "constants";
 import { readdirSync } from 'fs';
 
 let __exitCode = 0;
